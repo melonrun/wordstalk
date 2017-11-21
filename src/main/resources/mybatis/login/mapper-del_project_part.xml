@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.wordstalk.translate.common.dao.DelProjectDao">
+
+    <insert id="saveDelProjectPart" useGeneratedKeys="true" keyProperty="id"
+            parameterType="com.wordstalk.translate.common.vo.ProjectPartVO">
+        <![CDATA[
+       INSERT INTO w_project_part_del (
+       	project_id, part_name, part_type, words_num, translator_id, salary_std, salary_real, start_date, end_date, comment,
+       	status,settle_date, pm_checkout) VALUES (
+       	#{projectId}, #{partName}, #{partType}, #{wordsNum}, #{translatorId}, #{salaryStd}, #{salaryReal}, #{startDate},
+       	#{endDate}, #{comment}, #{status}, #{settleDate}, #{pmCheckout}
+       )
+    ]]>
+    </insert>
+
+</mapper>

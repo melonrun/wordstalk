@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.wordstalk.translate.common.dao.TranslatorDao">
+
+	<resultMap id="translatorMap"
+		type="com.wordstalk.translate.common.vo.TranslatorVO">
+		<id column="id" property="id" />
+		<id column="name" property="name" />
+		<id column="work_experience" property="workExperience" />
+		<id column="remarks" property="remarks" />
+		<id column="level" property="level" />
+		<id column="skillful_field" property="skillfulField" />
+		<id column="contract_start_date" property="contractStartDate" />
+		<id column="contract_end_date" property="contractEndDate" />
+		<id column="salary" property="salary" />
+		<id column="telephone" property="telephone" />
+		<id column="email" property="email" />
+		<id column="language_list" property="languageList" />
+		<id column="spare_days_str" property="spareDayStr"/>
+        <id column="part_num" property="partNum" />
+        <id column="status" property="status"/>
+	</resultMap>
+	
+	<select id="queryAllTranslator" resultMap="translatorMap">
+		select * from w_translators order by id desc
+	</select>
+	
+	<select id="queryTranslatorList" resultMap="translatorMap">
+		select a.* from w_translators a left join w_project_part b on a.id = b.translator_id
+		left join w_project c on c.id = b.project_id
+		<where>
+			1=1
+			<if test="name!=null and name!='' ">
+				and a.name LIKE CONCAT(CONCAT('%', #{name}),'%')
+			</if>
+			<if test="languageFrom!= null and languageFrom !=''">
+				and a.language_list LIKE CONCAT('%',#{languageFrom},'%')
+			</if>
+			<if test="customerName !=null and customerName !='' and customerName != '-1'">
+				and c.customer_name LIKE CONCAT(CONCAT('%', #{customerName}), '%')
+			</if>
+			<if test="levelStr != null and levelStr != '' and levelStr != '-1'">
+				and a.level = #{levelStr}
+			</if>
+		</where>
+		group by a.id order by a.status desc, a.part_num desc LIMIT #{offset}, #{rows}
+	</select>
+	
+	<select id="getTranslatorDetail" resultMap="translatorMap">
+		select * from w_translators
+		<where>
+			<if test="id!=null and id!='' ">
+				id = #{id}
+			</if>
+		</where>
+	</select>
+
+	<select id="querySumOfTranslator" resultType="int">
+		select count(DISTINCT a.id) from w_translators a left join w_project_part b on a.id = b.translator_id
+		left join w_project c on c.id = b.project_id
+		<where>
+			1=1
+			<if test="name!=null and name!='' ">
+				and a.name LIKE CONCAT(CONCAT('%', #{name}),'%')
+			</if>
+			<if test="languageFrom!= null and languageFrom !=''">
+				and a.language_list LIKE CONCAT('%',#{languageFrom},'%')
+			</if>
+			<if test="customerName !=null and customerName !='' and customerName != '-1'">
+				and c.customer_name LIKE CONCAT(CONCAT('%', #{customerName}), '%')
+			</if>
+			<if test="levelStr != null and levelStr != '' and levelStr != '-1'">
+				and a.level = #{levelStr}
+			</if>
+		</where>
+	</select>
+
+	<insert id="saveTranslator" useGeneratedKeys="true" keyProperty="id"
+		parameterType="com.wordstalk.translate.common.vo.TranslatorVO">
+    <![CDATA[
+       INSERT INTO w_translators (
+       	name, work_experience, remarks, level, skillful_field, language_list, contract_start_date, contract_end_date, salary, telephone, email,
+       	spare_days_str, status
+       ) VALUES (
+       	#{name}, #{workExperience}, #{remarks}, #{level}, #{skillfulField}, #{languageList}, #{contractStartDate}, #{contractEndDate},
+       		 #{salary}, #{telephone}, #{email}, #{spareDayStr}, #{status}
+       )
+    ]]>
+	</insert>
+
+	<update id="updateTranslator" parameterType="com.wordstalk.translate.common.vo.TranslatorVO">
+		update w_translators set name = #{name}, work_experience = #{workExperience}, remarks = #{remarks}, level = #{level}, skillful_field = #{skillfulField}, 
+		language_list = #{languageList}, contract_start_date = #{contractStartDate}, contract_end_date = #{contractEndDate}, 
+		salary = #{salary},telephone = #{telephone},email = #{email}, spare_days_str=#{spareDayStr}, status=#{status} where id = #{id};
+	</update>
+
+    <update id="updatePartNumByTId" parameterType="com.wordstalk.translate.common.vo.ProjectPartVO">
+        update w_translators a, (select count(*) as part_num from w_project_part where translator_id = #{translatorId})
+            b set a.part_num=b.part_num where a.id=#{translatorId};
+    </update>
+
+	<update id="updateTranslatorScore" parameterType="com.wordstalk.translate.common.vo.TranslatorVO">
+		update w_translators set level=#{level}, score_avg=#{scoreAvg} where id = #{id};
+	</update>
+
+</mapper>

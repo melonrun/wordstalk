@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.wordstalk.translate.common.dao.ProjectDao">
+
+	<resultMap id="projectMap" type="com.wordstalk.translate.common.vo.ProjectVO">
+	    <id column="id" property="id" />
+	    <id column="project_name" property="projectName" />
+	    <id column="customer_name" property="customerName" />
+	    <id column="start_date" property="startDate" />
+	    <id column="end_date" property="endDate" />
+	    <id column="language_from" property="languageFrom" />
+	    <id column="language_to" property="languageTo" />
+	    <id column="words_count" property="wordsCount" />
+		<id column="review_words_count" property="reviewWordsCount" />
+	    <id column="words_no_space" property="wordsNoSpace" />
+        <id column="project_type" property="projectType" />
+	    <id column="remarks" property="remarks" />
+	</resultMap>
+	
+	<select id="exportAllProjectList" resultMap="projectMap">
+		select * from w_project order by id desc
+	</select>
+	
+	<select id="querySumOfAllProject" resultType="int"><!-- 全部项目总数 -->
+		select count(distinct id) from w_project
+		<where>
+		    <if test="1==1"> 1=1</if>
+			<if test="searchKey!=null and searchKey!='' ">
+				and project_name LIKE CONCAT(CONCAT('%', #{searchKey}),'%')
+			</if>
+			<if test="other!=null and other!='' ">
+				and customer_name LIKE CONCAT(CONCAT('%', #{other}),'%')
+			</if>
+			<if test="name!=null and name!='' and name!='-1' ">
+				and project_type = #{name}
+			</if>
+		</where>
+	</select>
+	
+	<select id="queryAllProjectList" resultMap="projectMap"><!-- 全部 -->
+		select * from w_project 
+		<where>
+			<if test="1==1"> 1=1</if>
+			<if test="searchKey!=null and searchKey!='' ">
+			 and project_name LIKE CONCAT(CONCAT('%', #{searchKey}),'%')
+			</if>
+			<if test="other!=null and other!='' ">
+			 and customer_name LIKE CONCAT(CONCAT('%', #{other}),'%')
+			</if>
+			<if test="name!=null and name!='' and name!='-1' ">
+				and project_type = #{name}
+			</if>
+		</where>
+		order by end_date desc, id desc LIMIT #{offset},#{rows}
+	</select>
+	
+	<select id="querySumOfFinishProjectPM" resultType="int"><!-- 已完成项目总数PM -->
+		select count(distinct a.id) from w_project a left join w_project_part b on a.id = b.project_id
+		<where>
+			<if test="status==2">
+				a.end_date &lt; curdate() and (b.status=1)
+			</if>
+			<if test="searchKey!=null and searchKey!='' ">
+				and a.project_name LIKE CONCAT(CONCAT('%', #{searchKey}),'%')
+			</if>
+			<if test="other!=null and other!='' ">
+				and a.customer_name LIKE CONCAT(CONCAT('%', #{other}),'%')
+			</if>
+			<if test="name!=null and name!='' and name!='-1' ">
+				and project_type = #{name}
+			</if>
+		</where>
+	</select>
+
+    <select id="querySumOfFinishProjectAdmin" resultType="int"><!-- 已完成项目总数ADMIN -->
+        select count(distinct a.id) from w_project a left join w_project_admin b on a.id = b.project_id
+        <where>
+            <if test="status==2">
+                a.end_date &lt; curdate() and (b.account_status=1)
+            </if>
+            <if test="searchKey!=null and searchKey!='' ">
+                and a.project_name LIKE CONCAT(CONCAT('%', #{searchKey}),'%')
+            </if>
+            <if test="other!=null and other!='' ">
+                and a.customer_name LIKE CONCAT(CONCAT('%', #{other}),'%')
+            </if>
+			<if test="name!=null and name!='' and name!='-1' ">
+				and project_type = #{name}
+			</if>
+        </where>
+    </select>
+	
+	<select id="queryFinishProjectListPM" resultMap="projectMap"><!-- 已完成PM -->
+		select distinct a.* from w_project a left join w_project_part b on a.id = b.project_id
+		<where>
+			<if test="status==2">
+				a.end_date &lt; curdate() and (b.status=1)
+			</if>
+			<if test="searchKey!=null and searchKey!='' ">
+				and a.project_name LIKE CONCAT(CONCAT('%', #{searchKey}),'%')
+			</if>
+			<if test="other!=null and other!='' ">
+				and a.customer_name LIKE CONCAT(CONCAT('%', #{other}),'%')
+			</if>
+			<if test="name!=null and name!='' and name!='-1' ">
+				and project_type = #{name}
+			</if>
+		</where>
+		order by a.end_date desc, a.id desc LIMIT #{offset},#{rows}
+	</select>
+
+    <select id="queryFinishProjectListAdmin" resultMap="projectMap"><!-- 已完成Admin -->
+        select distinct a.* from w_project a left join w_project_admin b on a.id = b.project_id
+        <where>
+            <if test="status==2">
+                a.end_date &lt; curdate() and (b.account_status=1)
+            </if>
+            <if test="searchKey!=null and searchKey!='' ">
+                and a.project_name LIKE CONCAT(CONCAT('%', #{searchKey}),'%')
+            </if>
+            <if test="other!=null and other!='' ">
+                and a.customer_name LIKE CONCAT(CONCAT('%', #{other}),'%')
+            </if>
+			<if test="name!=null and name!='' and name!='-1' ">
+				and project_type = #{name}
+			</if>
+        </where>
+        order by a.end_date desc, a.id desc LIMIT #{offset},#{rows}
+    </select>
+	
+	<select id="querySumOfRunningProjectPM" resultType="int"><!-- 正在进行项目总数 -->
+		select count(distinct a.id) from w_project a left join w_project_admin b on a.id=b.project_id
+		<where>
+			<if test="status==0">
+				a.end_date &gt;= CURDATE() and b.project_id is not null
+            </if>
+			<if test="searchKey!=null and searchKey!='' ">
+				and project_name LIKE CONCAT(CONCAT('%', #{searchKey}),'%')
+			</if>
+			<if test="other!=null and other!='' ">
+				and customer_name LIKE CONCAT(CONCAT('%', #{other}),'%')
+			</if>
+			<if test="name!=null and name!='' and name!='-1' ">
+				and project_type = #{name}
+			</if>
+		</where>
+	</select>
+	
+	<select id="queryProjectRuningListPM" resultMap="projectMap"><!-- 正在进行 -->
+		select distinct a.* from w_project a left join w_project_admin b on a.id = b.project_id
+		<where>
+			<if test="status==0">
+				a.end_date &gt;= CURDATE() and b.project_id is not null
+			</if>
+			<if test="searchKey!=null and searchKey!='' ">
+				and project_name LIKE CONCAT(CONCAT('%', #{searchKey}),'%')
+			</if>
+			<if test="other!=null and other!='' ">
+				and customer_name LIKE CONCAT(CONCAT('%', #{other}),'%')
+			</if>
+			<if test="name!=null and name!='' and name!='-1' ">
+				and project_type = #{name}
+			</if>
+		</where>
+		order by end_date desc, id desc LIMIT #{offset},#{rows}
+	</select>
+
+	<select id="querySumOfUnSettleProjectPM" resultType="int"><!-- 交稿未结算总数PM -->
+        select count(distinct a.id) from w_project a left join w_project_part b on a.id = b.project_id
+        <where>
+            <if test="status==1">
+                curdate() &gt; a.end_date and (b.pm_checkout=1) and (status=-1)
+            </if>
+            <if test="searchKey!=null and searchKey!='' ">
+                and a.project_name LIKE CONCAT(CONCAT('%', #{searchKey}),'%')
+            </if>
+            <if test="other!=null and other!='' ">
+                and a.customer_name LIKE CONCAT(CONCAT('%', #{other}),'%')
+            </if>
+			<if test="name!=null and name!='' and name!='-1' ">
+				and project_type = #{name}
+			</if>
+        </where>
+	</select>
+
+    <select id="querySumOfUnSettleProjectAdmin" resultType="int"><!-- 交稿未结算总数Admin -->
+        select count(distinct a.id) from w_project a left join w_project_admin b on a.id = b.project_id
+        <where>
+            <if test="status==1">
+                curdate() &gt; a.end_date and (b.account_status=-1)
+            </if>
+            <if test="searchKey!=null and searchKey!='' ">
+                and a.project_name LIKE CONCAT(CONCAT('%', #{searchKey}),'%')
+            </if>
+            <if test="other!=null and other!='' ">
+                and a.customer_name LIKE CONCAT(CONCAT('%', #{other}),'%')
+            </if>
+			<if test="name!=null and name!='' and name!='-1' ">
+				and project_type = #{name}
+			</if>
+        </where>
+    </select>
+
+	<select id="queryUnSettleProjectListPM" resultMap="projectMap"><!-- 交稿未结算PM -->
+        select distinct a.* from w_project a left join w_project_part b on a.id = b.project_id
+        <where>
+            <if test="status==1">
+                curdate() &gt; a.end_date and (b.pm_checkout=1) and (status=-1)
+            </if>
+            <if test="searchKey!=null and searchKey!='' ">
+                and a.project_name LIKE CONCAT(CONCAT('%', #{searchKey}),'%')
+            </if>
+            <if test="other!=null and other!='' ">
+                and a.customer_name LIKE CONCAT(CONCAT('%', #{other}),'%')
+            </if>
+			<if test="name!=null and name!='' and name!='-1' ">
+				and project_type = #{name}
+			</if>
+        </where>
+        order by a.end_date desc, a.id desc LIMIT #{offset},#{rows}
+	</select>
+
+    <select id="queryUnSettleProjectListAdmin" resultMap="projectMap"><!-- 交稿未结算Admin -->
+        select distinct a.* from w_project a left join w_project_admin b on a.id = b.project_id
+        <where>
+            <if test="status==1">
+                curdate() &gt; a.end_date and (b.account_status=-1)
+            </if>
+            <if test="searchKey!=null and searchKey!='' ">
+                and a.project_name LIKE CONCAT(CONCAT('%', #{searchKey}),'%')
+            </if>
+            <if test="other!=null and other!='' ">
+                and a.customer_name LIKE CONCAT(CONCAT('%', #{other}),'%')
+            </if>
+			<if test="name!=null and name!='' and name!='-1' ">
+				and project_type = #{name}
+			</if>
+        </where>
+        order by a.end_date desc, a.id desc LIMIT #{offset},#{rows}
+    </select>
+
+
+    <select id="querySumOfUnSaveProject" resultType="int"><!-- 未录入 -->
+        select count(distinct a.id) from w_project a left join w_project_admin b on a.id = b.project_id
+        <where>
+            <if test="1==1"> 1=1 and b.project_id is null </if>
+            <if test="searchKey!=null and searchKey!='' ">
+                and a.project_name LIKE CONCAT(CONCAT('%', #{searchKey}),'%')
+            </if>
+            <if test="other!=null and other!='' ">
+                and a.customer_name LIKE CONCAT(CONCAT('%', #{other}),'%')
+            </if>
+			<if test="name!=null and name!='' and name!='-1' ">
+				and project_type = #{name}
+			</if>
+        </where>
+    </select>
+
+    <select id="queryUnSaveProjectList" resultMap="projectMap"><!-- 未录入 -->
+        select distinct a.* from w_project a left join w_project_part b on a.id = b.project_id
+        <where>
+            <if test="1==1"> 1=1 and b.project_id is null </if>
+            <if test="searchKey!=null and searchKey!='' ">
+                and a.project_name LIKE CONCAT(CONCAT('%', #{searchKey}),'%')
+            </if>
+            <if test="other!=null and other!='' ">
+                and a.customer_name LIKE CONCAT(CONCAT('%', #{other}),'%')
+            </if>
+			<if test="name!=null and name!='' and name!='-1' ">
+				and project_type = #{name}
+			</if>
+        </where>
+        order by a.end_date desc, a.id desc LIMIT #{offset},#{rows}
+    </select>
+
+
+	<select id="getProjectDetail" resultMap="projectMap">
+		select * from w_project where id = #{id}
+	</select>
+
+    <select id="getLastProjectId" resultType="int">
+        select id from w_project order by id desc limit 1
+    </select>
+
+	<insert id="addProjectSubmit" useGeneratedKeys="true" keyProperty="id"
+		parameterType="com.wordstalk.translate.common.vo.ProjectVO">
+    <![CDATA[
+       INSERT INTO w_project (
+       	project_name, customer_name, start_date, end_date, language_from, language_to, words_count, words_no_space, remarks
+       , project_type) VALUES (
+       	#{projectName}, #{customerName}, #{startDate}, #{endDate}, #{languageFrom}, #{languageTo}, #{wordsCount},
+       		 #{wordsNoSpace}, #{remarks}, #{projectType}
+       )
+    ]]>
+	</insert>
+
+	<update id="updateTranslatorSubmit" parameterType="com.wordstalk.translate.common.vo.ProjectVO">
+		update w_project set project_name=#{projectName}, customer_name=#{customerName}, start_date=#{startDate}, end_date=#{endDate}, 
+		language_from=#{languageFrom}, language_to=#{languageTo}, words_count= #{wordsCount}, words_no_space=#{wordsNoSpace},
+		 remarks=#{remarks}, project_type=#{projectType} where id = #{id};
+	</update>
+ 		
+	<update id="updateWordsNum" parameterType="com.wordstalk.translate.common.vo.ProjectPartVO">
+		update w_project set words_count=#{wordsNum}  where id = #{projectId}
+	</update>
+	<update id="updateReviewWordsNum" parameterType="com.wordstalk.translate.common.vo.ProjectPartVO">
+		update w_project set review_words_count=#{wordsNum} where id = #{projectId}
+	</update>
+</mapper>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.wordstalk.translate.common.dao.UserDao">
+
+    <resultMap id="userMap" type="com.wordstalk.translate.common.vo.UserVO">
+    		<id column="id" property="id"/>
+        <id column="user_name" property="userName" jdbcType="VARCHAR"/>
+        <id column="user_pass" property="userPass" jdbcType="VARCHAR"/>
+    </resultMap>
+    <resultMap id="roleMap" type="com.wordstalk.translate.common.vo.RoleVO">
+    		<id column="id" property="id"/>
+        <id column="role_name" property="roleName"  />
+        <id column="role_desc" property="roleDesc"  />
+        <id column="permissions" property="permissions" />
+    </resultMap>
+    <select id="queryUserByNameAndPass" resultMap="userMap">
+        select id, user_name, user_pass from w_user_info where user_name=#{userName} and user_pass=#{userPass}
+    </select>
+
+    <select id="queryUserRoleById" resultMap="roleMap">
+			select a.id, a.role_name, a.role_desc, a.permissions from w_user_role a left join w_user_rolemap
+			 b on a.id=b.role_id where b.user_id=#{id};
+    </select>
+</mapper>

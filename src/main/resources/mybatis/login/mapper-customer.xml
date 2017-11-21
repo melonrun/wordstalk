@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.wordstalk.translate.common.dao.CustomerDao">
+
+    <resultMap id="customerMap" type="com.wordstalk.translate.common.vo.CustomerVO">
+        <id column="id" property="id"/>
+        <id column="customer_name" property="customerName"/>
+        <id column="organ_name" property="organName"/>
+        <id column="manager_name" property="managerName"/>
+        <id column="title" property="title"/>
+        <id column="cellphone" property="cellphone"/>
+        <id column="email" property="email"/>
+        <id column="qq" property="qq"/>
+        <id column="address" property="address"/>
+        <id column="remark" property="remark"/>
+    </resultMap>
+
+    <resultMap id="customerProjectMap" type="com.wordstalk.translate.common.vo.CustomerProjectVO">
+        <id column="start_date" property="startDate"/>
+        <id column="end_date" property="endDate"/>
+        <id column="project_name" property="projectName"/>
+        <id column="charge_std" property="chargeStd"/>
+        <id column="project_income" property="projectIncome"/>
+        <id column="sale_commission" property="saleCommission"/>
+        <id column="account_status" property="accountStatus"/>
+        <id column="account_date" property="accountDate"/>
+    </resultMap>
+
+    <select id="getAllCustomerList" resultMap="customerMap">
+        select * from w_customer
+    </select>
+
+
+    <select id="getCustomerDetail" resultMap="customerMap">
+        select * from w_customer where id = #{id}
+    </select>
+
+    <select id="getCustomerList" resultMap="customerMap">
+        select * from w_customer
+        <where>
+            1=1
+            <if test="customerName!=null and customerName!='' ">
+                and customer_name LIKE CONCAT(CONCAT('%', #{customerName}),'%')
+            </if>
+            <if test="other!=null and other!='' ">
+                and manager_name LIKE CONCAT(CONCAT('%', #{other}),'%')
+            </if>
+            <if test="name!=null and name!='' ">
+                and organ_name LIKE CONCAT(CONCAT('%', #{name}),'%')
+            </if>
+        </where>
+        order by id LIMIT #{offset}, #{rows}
+    </select>
+
+    <select id="querySumOfCustomer" resultType="int">
+        select count(DISTINCT id) from w_customer
+        <where>
+            1 = 1
+            <if test="customerName!=null and customerName!='' ">
+                and customer_name LIKE CONCAT(CONCAT('%', #{customerName}),'%')
+            </if>
+            <if test="other!=null and other!='' ">
+                and manager_name LIKE CONCAT(CONCAT('%', #{other}),'%')
+            </if>
+            <if test="name!=null and name!='' ">
+                and organ_name LIKE CONCAT(CONCAT('%', #{name}),'%')
+            </if>
+        </where>
+    </select>
+
+    <insert id="insertCustomerVO" useGeneratedKeys="true" keyProperty="id"
+            parameterType="com.wordstalk.translate.common.vo.CustomerVO">
+        <![CDATA[
+       INSERT INTO w_customer (
+       	customer_name, organ_name, manager_name, title, cellphone, email, qq, address, remark) VALUES (
+       	#{customerName}, #{organName}, #{managerName}, #{title}, #{cellphone}, #{email}, #{qq},
+       		 #{address}, #{remark}
+       )
+    ]]>
+    </insert>
+
+    <select id="getProjectListByCustomer" resultMap="customerProjectMap">
+        select a.start_date, a.end_date, a.project_name, b.charge_std, b.project_income, b.sale_commission,
+        b.account_status, b.end_date as account_date from w_project a left join w_project_admin b
+        on a.id = b.project_id where a.customer_name like CONCAT(CONCAT('%', #{customerName}),'%')
+        order by b.account_status, b.end_date, a.end_date
+    </select>
+
+    <update id="updateCustomerVO" parameterType="com.wordstalk.translate.common.vo.CustomerVO">
+        update w_customer set customer_name=#{customerName}, organ_name=#{organName},
+        manager_name=#{managerName}, title=#{title}, cellphone=#{cellphone}, email=#{email},
+        qq= #{qq}, address=#{address}, remark=#{remark} where id = #{id};
+    </update>
+
+</mapper>

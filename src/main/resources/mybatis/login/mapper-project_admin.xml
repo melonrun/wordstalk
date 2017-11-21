@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.wordstalk.translate.common.dao.ProjectAdminDao">
+
+    <resultMap id="projectAdminMap" type="com.wordstalk.translate.common.vo.ProjectAdminVO">
+		<id column="id" property="id"/>
+		<id column="project_id" property="projectId"/>
+		<id column="charge_std" property="chargeStd"/>
+		<id column="project_income" property="projectIncome"/>
+		<id column="tran_cost" property="tranCost"/>
+		<id column="review_cost" property="reviewCost"/>
+		<id column="tax_cost" property="taxCost"/>
+		<id column="manage_cost" property="manageCost"/>
+		<id column="sale_commission" property="saleCommission"/>
+		<id column="sale_record" property="saleRecord"/>
+		<id column="project_profit" property="projectProfit"/>
+		<id column="profit_ratio" property="profitRatio"/>
+		<id column="account_status" property="accountStatus"/>
+		<id column="end_date" property="endDate"/>
+		<id column="pm_checkout_date" property="pmCheckoutDate"/>
+		<id column="project_name" property="projectName"/>
+        <id column="words_count" property="wordsCount"/>
+        <id column="review_words_count" property="reviewWordsCount"/>
+		<id column="pm_checkout" property="pmCheckout"/>
+    </resultMap>
+    	
+	<select id="exportAllProjectAdminList" resultMap="projectAdminMap">
+		select a.*, b.project_name from w_project_admin a left join w_project b on a.project_id = b.id order by a.end_date desc
+	</select>
+	
+	<select id="getProjectAdminUseId" resultMap="projectAdminMap">
+		select * from w_project_admin where project_id = #{projectId}
+	</select>
+	
+	<select id="querTransCost" resultType="double">
+		select sum(salary_real) from w_project_part where project_id = #{id}
+	</select>
+	
+	<select id="queryWordsNum" resultType="long">
+		select sum(words_num) from w_project_part where project_id = #{id} and part_type = 1
+	</select>
+	
+	<insert id="insertProjectAdmin" useGeneratedKeys="true" keyProperty="id"
+		parameterType="com.wordstalk.translate.common.vo.ProjectAdminVO">
+    <![CDATA[
+       INSERT INTO w_project_admin (project_id, charge_std, project_income, tran_cost, manage_cost, sale_commission, 
+       sale_record, project_profit, profit_ratio, account_status, end_date, review_cost, tax_cost, words_count,
+        review_words_count, pm_checkout, pm_checkout_date) VALUES ( #{projectId}, #{chargeStd}, #{projectIncome}, #{tranCost}, #{manageCost},
+         #{saleCommission}, #{saleRecord}, #{projectProfit}, #{profitRatio}, #{accountStatus}, #{endDate},
+         #{reviewCost}, #{taxCost}, #{wordsCount}, #{reviewWordsCount}, #{pmCheckout}, #{pmCheckoutDate}
+       )
+    ]]>
+	</insert>
+	
+	<update id="saveProjectAdmin" parameterType="com.wordstalk.translate.common.vo.ProjectAdminVO">
+		update w_project_admin set charge_std=#{chargeStd}, project_income=#{projectIncome}, tran_cost=#{tranCost}, 
+		manage_cost=#{manageCost}, sale_commission=#{saleCommission}, sale_record= #{saleRecord}, project_profit=#{projectProfit},
+		 profit_ratio=#{profitRatio}, account_status=#{accountStatus}, end_date=#{endDate},  review_cost=#{reviewCost},
+		tax_cost=#{taxCost}, words_count=#{wordsCount}, review_words_count=#{reviewWordsCount}, pm_checkout=#{pmCheckout},
+		pm_checkout_date=#{pmCheckoutDate}
+        where project_id = #{projectId};
+	</update>
+</mapper>

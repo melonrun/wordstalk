@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.wordstalk.translate.common.dao.ProjectPartDao">
+	<resultMap id="partMap" type="com.wordstalk.translate.common.vo.ProjectPartVO">
+	    <id column="id" property="id" />
+	    <id column="project_id" property="projectId" />
+	    <id column="part_name" property="partName" />
+		<id column="part_type" property="partType" />
+	    <id column="words_num" property="wordsNum" />
+	    <id column="translator_id" property="translatorId" />
+	    <id column="salary_std" property="salaryStd" />
+	    <id column="salary_real" property="salaryReal" />
+	    <id column="start_date" property="startDate" />
+	    <id column="end_date" property="endDate" />
+	    <id column="comment" property="comment" />
+	    <id column="status" property="status" />
+	    <id column="settle_date" property="settleDate" />
+	    <id column="translator_name" property="translatorName" />
+	    <id column="project_name" property="projectName" />
+	    <id column="project_id_str" property="projectIdStr" />
+		<id column="pm_checkout" property="pmCheckout"/>
+        <id column="score_1" property="score1"/>
+        <id column="score_2" property="score2"/>
+        <id column="score_3" property="score3"/>
+        <id column="score_4" property="score4"/>
+        <id column="score_5" property="score5"/>
+        <id column="score_avg" property="scoreAvg"/>
+	</resultMap>
+	
+	<select id="exportAllProjectPartList" resultMap="partMap">
+		select a.*, b.name as translator_name from w_project_part a left join w_translators b on a.translator_id=b.id
+		where a.project_id = #{id}
+	</select>
+
+	<select id="queryTransAllCost" resultType="double">
+		select sum(salary_real) from w_project_part where translator_id=#{id}
+	</select>
+
+	<select id="queryProjectWordsNum" resultType="int">
+		select sum(words_num) from w_project_part where project_id = #{projectId} and part_type = #{partType}
+	</select>
+	
+	<select id="getProjectPartByTid" resultMap="partMap">
+		select a.*, b.project_name, concat(date_format(b.start_date, '%y%m%d'),'-',date_format(b.end_date,'%y%m%d')) as project_id_str
+		from w_project_part a left join w_project b on a.project_id = b.id
+		<where>
+			<if test="searchKey !=null and searchKey !='' "> a.translator_id = #{searchKey} </if>
+		</where>
+		order by a.status asc, a.pm_checkout desc, a.end_date desc, b.id desc LIMIT #{offset},#{rows}
+	</select>
+	
+	<select id="getAllProjectPartByTid" resultMap="partMap">
+		select a.*, b.project_name from w_project_part a left join w_project b on a.project_id=b.id
+			where a.translator_id = #{id}
+	</select>
+	
+	<select id="querySumOfProjectPartByTid" resultType="int">
+		select count(*) from w_project_part
+		<where>
+			<if test="searchKey !=null and searchKey !='' "> translator_id = #{searchKey} </if>
+		</where>
+	</select>
+	
+	<select id="querySumOfProjectPart" resultType="int">
+		select count(*) from w_project_part
+		<where>
+			<if test="projectId!=null and projectId!='' "> project_id = #{projectId} </if>
+		</where>
+	</select>
+	
+	<select id="queryProjectPartList" resultMap="partMap">
+		select a.*, b.name as translator_name from w_project_part a left join w_translators b on a.translator_id=b.id
+		<where>
+			<if test="projectId!=null and projectId!='' ">
+				a.project_id = #{projectId} 
+			</if>
+		</where>
+		<if test="sortOrderBy == ''">
+            order by a.id desc
+        </if>
+        <if test="sortOrderBy == 'part_name' and sortRule == 'desc'">
+            order by a.part_name desc
+        </if>
+        <if test="sortOrderBy == 'part_name' and sortRule == 'asc'">
+            order by a.part_name asc
+        </if>
+        <if test="sortOrderBy == 'translator_id' and sortRule == 'desc'">
+            order by a.translator_id desc
+        </if>
+        <if test="sortOrderBy == 'translator_id' and sortRule == 'asc'">
+            order by a.translator_id asc
+        </if>
+        LIMIT #{offset},#{rows}
+	</select>
+	
+	<select id="getProjectPartDetail" resultMap="partMap">
+		select a.*, b.name as translator_name from w_project_part a left join w_translators b on a.translator_id=b.id
+		<where>
+			<if test="id!=null and id!='' ">
+				a.id = #{id} 
+			</if>
+		</where>
+	</select>
+	
+	<insert id="addProjectPartSubmit" useGeneratedKeys="true" keyProperty="id"
+		parameterType="com.wordstalk.translate.common.vo.ProjectPartVO">
+    <![CDATA[
+       INSERT INTO w_project_part (
+       	project_id, part_name, part_type, words_num, translator_id, salary_std, salary_real, start_date, end_date, comment,
+       	status,settle_date, score_1,score_2,score_3,score_4,score_5,score_avg) VALUES (
+       	#{projectId}, #{partName}, #{partType}, #{wordsNum}, #{translatorId}, #{salaryStd}, #{salaryReal}, #{startDate},
+       	#{endDate}, #{comment}, #{status}, #{settleDate}, #{score1},#{score2},#{score3},#{score4},#{score5},#{scoreAvg}
+       )
+    ]]>
+	</insert>
+	
+	<update id="updateProjectPartSubmit" parameterType="com.wordstalk.translate.common.vo.ProjectPartVO">
+		update w_project_part set project_id=#{projectId}, part_name=#{partName}, part_type=#{partType},
+		words_num=#{wordsNum}, translator_id=#{translatorId},
+		salary_std=#{salaryStd}, salary_real=#{salaryReal}, start_date= #{startDate}, end_date=#{endDate},
+		 comment=#{comment},score_1=#{score1},score_2=#{score2},score_3=#{score3}
+        ,score_4=#{score4},score_5=#{score5},score_avg=#{scoreAvg} where id = #{id};
+	</update>
+
+	<update id="updatePartSettleStatus" parameterType="com.wordstalk.translate.common.vo.ProjectPartVO">
+		update w_project_part set status = #{status}, settle_date = #{settleDate} where id=#{id}
+	</update>
+
+	<update id="updatePmCheckout" parameterType="com.wordstalk.translate.common.vo.ProjectAdminVO">
+		update w_project_part set pm_checkout = #{pmCheckout} where project_id = #{projectId}
+	</update>
+
+    <update id="updatePmCheckoutById" parameterType="com.wordstalk.translate.common.vo.ProjectPartVO">
+        update w_project_part set pm_checkout = #{pmCheckout} where id = #{id}
+    </update>
+
+	<update id="deleteProjectPart" parameterType="com.wordstalk.translate.common.vo.ProjectPartVO">
+		delete from w_project_part where id = #{id}
+	</update>
+
+</mapper>

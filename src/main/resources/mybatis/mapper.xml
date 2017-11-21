@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//ibatis.apache.org//DTD Config 3.0//EN"
+        "http://ibatis.apache.org/dtd/ibatis-3-config.dtd">
+
+<configuration>
+    <mappers>
+        <!-- category related -->
+        <mapper resource="mybatis/mapper-category.xml" />
+        <mapper resource="mybatis/login/mapper-user.xml"/>
+        <mapper resource="mybatis/login/mapper-translator.xml"/>
+        <mapper resource="mybatis/login/mapper-project.xml"	/>
+        <mapper resource="mybatis/login/mapper-project_part.xml"/>
+        <mapper resource="mybatis/login/mapper-project_admin.xml"/>
+        <mapper resource="mybatis/login/mapper-del_project_part.xml"/>
+        <mapper resource="mybatis/login/mapper-organization.xml"/>
+        <mapper resource="mybatis/login/mapper-customer.xml"/>
+    </mappers>
+</configuration>
