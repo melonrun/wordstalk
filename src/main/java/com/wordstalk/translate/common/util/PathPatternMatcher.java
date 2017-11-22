@@ -296,7 +296,7 @@ public abstract class PathPatternMatcher {
 		}
 		return ret;
 	}
-	
+
 	public static boolean urlPathMatch(List<String> pathes, String urlPath) {
 		for(String path:pathes) {
 			boolean f = false;
@@ -311,7 +311,7 @@ public abstract class PathPatternMatcher {
 		}
 
 		return false;
-	}	
+	}
 
 	public static void main(String[] args) {
 		System.out.println("-- " +  match("/**/*.jsp", "/e.jsp"));
